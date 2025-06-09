@@ -133,13 +133,17 @@ const writeToUsKeyboard = {
   ],
 };
 
-bot.onText(/\/start/, (msg) => {
-  const chatId = msg.chat.id;
+function showWelcomeMenu(chatId) {
   bot.sendPhoto(chatId, welcomeImage, {
     caption: welcomeText,
     parse_mode: "HTML",
     reply_markup: welcomeKeyboard,
   });
+}
+
+bot.onText(/\/start/, (msg) => {
+  const chatId = msg.chat.id;
+  showWelcomeMenu(chatId);
 });
 
 bot.on("callback_query", (query) => {
@@ -174,7 +178,10 @@ bot.on("callback_query", (query) => {
       keyboard = writeToUsKeyboard;
       break;
     case "write_via_bot":
-      userState[chatId] = "awaiting_question";
+      userState[chatId] = {
+        state: "awaiting_question",
+        lastMenuMessageId: messageId,
+      };
       bot.sendMessage(
         chatId,
         "Будь ласка, напишіть ваше запитання одним повідомленням. Я передам його адміністратору."
@@ -184,11 +191,7 @@ bot.on("callback_query", (query) => {
       bot
         .deleteMessage(chatId, messageId)
         .catch((err) => console.log(err.message));
-      bot.sendPhoto(chatId, welcomeImage, {
-        caption: welcomeText,
-        parse_mode: "HTML",
-        reply_markup: welcomeKeyboard,
-      });
+      showWelcomeMenu(chatId);
       return;
   }
 
@@ -252,7 +255,7 @@ bot.on("message", (msg) => {
     }
   }
 
-  if (userState[chatId] === "awaiting_question") {
+  if (userState[chatId] && userState[chatId].state === "awaiting_question") {
     const userQuestion = msg.text;
     const userName = msg.from.username
       ? `@${msg.from.username}`
@@ -268,10 +271,27 @@ bot.on("message", (msg) => {
         messageToUserMap[sentMessage.message_id] = chatId;
       });
 
-    bot.sendMessage(
-      chatId,
-      "✅ Дякую! Ваше повідомлення надіслано адміністратору. Вам дадуть відповідь найближчим часом."
-    );
+    const lastMenuMessageId =
+      userState[chatId] && userState[chatId].lastMenuMessageId;
+
+    bot
+      .sendMessage(
+        chatId,
+        "✅ Дякую! Ваше повідомлення надіслано адміністратору. Вам дадуть відповідь найближчим часом."
+      )
+      .then(() => {
+        if (lastMenuMessageId) {
+          bot
+            .deleteMessage(chatId, lastMenuMessageId)
+            .catch((err) =>
+              console.log("Не удалось удалить меню:", err.message)
+            );
+        }
+
+        setTimeout(() => {
+          showWelcomeMenu(chatId);
+        }, 1000);
+      });
 
     delete userState[chatId];
   }
