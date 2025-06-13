@@ -33,7 +33,7 @@ const welcomeText = `<b>Привіт! Я — Нейрон, твій провід
 
 👇 Обери, що цікавить далі:`;
 
-const welcomeImage = "./img/image.png";
+const welcomeImage = "./img/image.jpg";
 
 const welcomeKeyboard = {
   inline_keyboard: [
@@ -274,24 +274,10 @@ bot.on("message", (msg) => {
     const lastMenuMessageId =
       userState[chatId] && userState[chatId].lastMenuMessageId;
 
-    bot
-      .sendMessage(
-        chatId,
-        "✅ Дякую! Ваше повідомлення надіслано адміністратору. Вам дадуть відповідь найближчим часом."
-      )
-      .then(() => {
-        if (lastMenuMessageId) {
-          bot
-            .deleteMessage(chatId, lastMenuMessageId)
-            .catch((err) =>
-              console.log("Не удалось удалить меню:", err.message)
-            );
-        }
-
-        setTimeout(() => {
-          showWelcomeMenu(chatId);
-        }, 1000);
-      });
+    bot.sendMessage(
+      chatId,
+      "✅ Дякую! Ваше повідомлення надіслано адміністратору. Вам дадуть відповідь найближчим часом."
+    );
 
     delete userState[chatId];
   }
