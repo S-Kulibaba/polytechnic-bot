@@ -127,7 +127,7 @@ const writeToUsText = `Обери, як зручно зв'язатися:`;
 const writeToUsKeyboard = {
   inline_keyboard: [
     // Замініть USERNAME_ADMIN на нікнейм адміна
-    [{ text: "✈️ Telegram-чат", url: "https://t.me/USERNAME_ADMIN" }],
+    [{ text: "✈️ Telegram-чат", url: "https://t.me/nyu4tu" }],
     [{ text: "✍️ Написати тут (боту)", callback_data: "write_via_bot" }],
     [{ text: "🔙 Назад до контактів", callback_data: "contacts" }],
   ],
